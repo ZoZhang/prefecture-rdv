@@ -11,9 +11,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [15.14.0]
@@ -26,12 +24,9 @@ jobs:
       - name: Deployment to multiple hosts with different ports
         uses: ./
         with:
-          host: "${{ secrets.HOST }}:${{ secrets.PORT }}"
+          host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          port: 8899
-          script_stop: true
-          script: |
-              ls \
-                -lah
+          port: ${{ secrets.PORT }}
+          script: ifconfig -a
           use_insecure_cipher: true
