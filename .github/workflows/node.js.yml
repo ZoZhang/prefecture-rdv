@@ -18,10 +18,20 @@ jobs:
       matrix:
         node-version: [15.14.0]
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm install
-    - run: node server.js
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Deployment to multiple hosts with different ports
+        uses: ./
+        with:
+          host: "${{ secrets.HOST }}:${{ secrets.PORT }}"
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: 8899
+          script_stop: true
+          script: |
+              ls \
+                -lah
+          use_insecure_cipher: true
