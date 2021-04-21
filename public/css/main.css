@@ -1,17 +1,29 @@
 .text-info {
-    color: #904bfb!important;
+    color: #e8e8e8!important;
 }
 
 .text-danger {
-    color: #a94442;
+    color: #ff4658!important;
+}
+
+.text-yello {
+    color: #e2ef3b!important;
 }
 
 .text-success {
-    color: #64CEAA;
+    color: #2ee057!important;
+}
+
+.text-primary {
+    color: #986cff!important;
+}
+
+.text-warning {
+    color: #f441ff!important;
 }
 
 #console {
-	visibility: hidden;
+    visibility: hidden;
     padding: 10px;
     overflow-y: scroll;
     max-height: 19rem;
@@ -28,12 +40,16 @@
 }
 
 #console > li {
-	margin-bottom: 9px;
+    margin-bottom: 9px;
     border-bottom: 1px #fff dashed;
     word-break: break-all;
     padding: 0 0 4px 4px;
 }
 
 #console > li.text-success {
-	color:#32f2fd;
+    color:#32f2fd;
+}
+
+#console > li > a {
+    color:#30d4cd;
 }

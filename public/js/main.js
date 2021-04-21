@@ -13,7 +13,7 @@
 
         rdv = {
             params: {
-                host: 'https://zozhang.github.io:8080',
+                host: 'wss://localhost',
                 audio: 'https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3'
             },
 
@@ -42,7 +42,7 @@
 
             // initialise connexion websocket
             initializWebSocket: function() {
-                rdv.params.socket = io(rdv.params.host, {transports: ['websocket', 'polling', 'flashsocket']});
+                rdv.params.socket = io(rdv.params.host, {transports: ['websocket'], secure: false});
 
                 rdv.params.socket.on('connect', () => {
                     console.log('WebSocket Client Connecté:', rdv.params.host);
@@ -51,13 +51,17 @@
                 // mise a jour les notifications.
                 rdv.params.socket.on('showResult', (res) => {
                     let message = '';
-                    let textStyles = ['text-primary', 'text-warning', 'text-white'];
-                    let className = textStyles[rdv.getRandomInt(0, textStyles.length - 1)];
+                    let className = rdv.getRandomStyle();
                     let li = document.createElement("li");
+                    let time = document.createElement("time");
 
+                    console.log(res);
+                    
                     if (res.success) {
                         className = 'text-success';
                         rdv.params.audioElement.play();
+                    } else if (res.error_code) {
+                        className = 'text-danger';
                     }
 
                     $(li).addClass(className);
@@ -69,13 +73,16 @@
                         message += res.message;
                     }
 
-                    message += ' ' + res.time;
+                    $(time).text(res.time).addClass('float-right');
+
+                    $(li).append(message);
+                    $(li).append(time)
 
                     if (res.url) {
-                        message += '<br/><a href="'+res.url+'" target="_blank">'+res.url+'</a>';
+                        $(li).append('<br/><a href="'+res.url+'" target="_blank">'+res.url+'</a>');
                     }
 
-                    rdv.params.Console.css('visibility', 'visible').prepend($(li).html(message));
+                    rdv.params.Console.css('visibility', 'visible').prepend($(li));
                 });
             },
 
@@ -105,6 +112,19 @@
                 min = Math.ceil(min);
                 max = Math.floor(max);
                 return Math.floor(Math.random() * (max - min + 1)) + min;
+            },
+
+            getRandomStyle: function() {
+               let textStyles = ['text-primary', 'text-warning', 'text-yello', 'text-info'];
+               let randomStyle = textStyles[rdv.getRandomInt(0, textStyles.length - 1)];
+
+               if (rdv.params.currStyle == randomStyle) {
+                    return rdv.getRandomStyle();
+               } 
+
+               rdv.params.currStyle = randomStyle;
+
+               return randomStyle;
             },
 
             initialiseAudio: function() {

@@ -5,7 +5,7 @@
  * @website zozhang.github.io
  */
 
-const port = 8080;
+const port = 3000;
 const express = require('express');
 const app = express();
 const http = require("http").createServer(app);
@@ -96,25 +96,26 @@ io.sockets.on('connection', socket => {
 
             if (err) {
                requests.message = err.code + ' - ' + err.message + 'ಠ·ಠ';
-               io.to(socket.id).emit('showResult', {success: false, message: requests.message, time: requests.time});
+               io.to(socket.id).emit('showResult', {success: false, error_code: err.code ,message: requests.message, time: requests.time});
             } else if (response.statusCode != 200) {
-                requests.message = response.statusCode + ' - ' + 'siteweb indisponible au ce moment.. ಠ·ಠ';
-               io.to(socket.id).emit('showResult', {success: false, message: requests.message, time: requests.time});
+                requests.message = response.statusCode + ' - ' + 'siteweb indisponible à ce moment.. ಠ·ಠ';
+               io.to(socket.id).emit('showResult', {success: false, error_code: response.statusCode, message: requests.message, time: requests.time});
             } else {
 
                 requests.body = body.toLowerCase();
 
                 switch(requests.mode) {
                     case 'guichet':
+                        let guichetI = requests.index - 1;
                         if (requests.body.match(requests.reg.maintenance)) {
                             requests.message = 'site indisponible à ce moment.. (¬_¬)';
-                            io.to(socket.id).emit('showResult', {success: false, message: requests.message, guichet: requests.guichet[requests.index - 1].label, time: requests.time});
+                            io.to(socket.id).emit('showResult', {success: false, message: requests.message, guichet: requests.guichet[guichetI].label, time: requests.time});
                         } else if (requests.body.match(requests.reg.nordv)) {
                             requests.message = 'aucun rdv indisponible à ce moment.. (¬_¬)';
-                            io.to(socket.id).emit('showResult', {success: false, message: requests.message, guichet: requests.guichet[requests.index - 1].label, time: requests.time});
+                            io.to(socket.id).emit('showResult', {success: false, message: requests.message, guichet: requests.guichet[guichetI].label, time: requests.time});
                         } else {
                             requests.message = 'Youpi !!! rdv disponible, vite vite (・ω<)';
-                            io.to(socket.id).emit('showResult', {success: true, message: requests.message, url: requests.url, guichet: requests.guichet[requests.index -1 ].label, time:requests.time});
+                            io.to(socket.id).emit('showResult', {success: true, message: requests.message, url: requests.url, guichet: requests.guichet[guichetI].label, time:requests.time});
                         }
                     break;
 
@@ -157,5 +158,5 @@ io.sockets.on('connection', socket => {
     }
 });
 
-http.listen(port, () => console.log("https://zozhang.github.io:"+port));
+http.listen(port, () => console.log("https://localhost:"+port));
 
