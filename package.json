@@ -14,6 +14,8 @@
   "author": "Zhao ZHANG",
   "license": "Apache-2.0",
   "dependencies": {
+    "express": "^4.17.1",
+    "http": "*",
     "moment": "^2.29.1",
     "query-string": "^7.0.0",
     "request": "^2.88.2",

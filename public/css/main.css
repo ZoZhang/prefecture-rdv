@@ -31,7 +31,7 @@
 	margin-bottom: 9px;
     border-bottom: 1px #fff dashed;
     word-break: break-all;
-    padding-bottom: 4px;
+    padding: 0 0 4px 4px;
 }
 
 #console > li.text-success {

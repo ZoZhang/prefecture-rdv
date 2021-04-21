@@ -13,6 +13,7 @@
 
         rdv = {
             params: {
+                host: 'https://zozhang.github.io/prefecture-rdv/',
                 audio: 'https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3'
             },
 
@@ -41,11 +42,10 @@
 
             // initialise connexion websocket
             initializWebSocket: function() {
-                const host = 'ws://127.0.0.1:8899';
-                rdv.params.socket = io(host, {transports: ['websocket', 'polling', 'flashsocket']});
+                rdv.params.socket = io(rdv.params.host, {transports: ['websocket', 'polling', 'flashsocket']});
 
                 rdv.params.socket.on('connect', () => {
-                    console.log('WebSocket Client Connecté:', host);
+                    console.log('WebSocket Client Connecté:', rdv.params.host);
                 });
 
                 // mise a jour les notifications.

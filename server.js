@@ -4,8 +4,17 @@
  * @author Zhao ZHANG <zo.zhang@gmail.com>
  * @website zozhang.github.io
  */
- 
-const port = 8899;
+
+const port = 80;
+const express = require('express');
+const app = express();
+const http = require("http").createServer(app);
+const io = require('socket.io')(http);
+const moment = require('moment');
+const request = require('request');
+const exec = require('child_process').execFile;
+const jar = request.jar();
+
 const requests = {
     index: 0,
     body: null,
@@ -20,11 +29,8 @@ const requests = {
     }
 };
 
-const io = require('socket.io')(port);
-var moment = require('moment');
-var request = require('request');
-var exec = require('child_process').execFile;
-var jar = request.jar();
+app.use(express.static('public'));
+app.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
 
 io.sockets.on('connection', socket => {
 
@@ -151,4 +157,5 @@ io.sockets.on('connection', socket => {
     }
 });
 
-console.log('Websocket service commence sur ws://127.0.0.1:%s, Appuyez sur Ctrl + C pour arrêter.', port);
+http.listen(port, () => console.log("https://zozhang.github.io/prefecture-rdv/"));
+
