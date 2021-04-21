@@ -5,7 +5,7 @@
  * @website zozhang.github.io
  */
 
-const port = 80;
+const port = 8080;
 const express = require('express');
 const app = express();
 const http = require("http").createServer(app);
@@ -157,5 +157,5 @@ io.sockets.on('connection', socket => {
     }
 });
 
-http.listen(port, () => console.log("https://zozhang.github.io/prefecture-rdv/"));
+http.listen(port, () => console.log("https://zozhang.github.io:"+port));
 

@@ -13,7 +13,7 @@
 
         rdv = {
             params: {
-                host: 'https://zozhang.github.io/prefecture-rdv/',
+                host: 'https://zozhang.github.io:8080',
                 audio: 'https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3'
             },
 
