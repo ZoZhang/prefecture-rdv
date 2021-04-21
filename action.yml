@@ -67,7 +67,7 @@ inputs:
     description: 'pass environment variable to shell script'
   debug:
     description: 'enable debug mode'
-    default: false
+    default: true
 runs:
   using: 'docker'
   image: 'Dockerfile'
