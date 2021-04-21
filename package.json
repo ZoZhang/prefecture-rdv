@@ -1,0 +1,19 @@
+{
+  "name": "ZoZhang/prefecture-rdv",
+  "displayName": "prefecture-rdv",
+  "version": "1.0.0",
+  "description": "Vérification la disponibilité du RDV à la préfecture France",
+  "main": "server.js",
+  "scripts": {},
+  "keywords": [
+    "prefecture rdv"
+  ],
+  "author": "Zhao ZHANG",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "moment": "^2.29.1",
+    "query-string": "^7.0.0",
+    "request": "^2.88.2",
+    "socket.io": "^3.0.4"
+  }
+}
