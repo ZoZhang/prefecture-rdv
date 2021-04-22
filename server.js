@@ -15,11 +15,8 @@ const request = require('request');
 const exec = require('child_process').execFile;
 const jar = request.jar();
 
-const requests = {
-    index: 0,
-    body: null,
-    time: null,
-    message: '',
+const servers = {
+    queue: [],
     reg: {
         ids: /(\d+).*?(?=\")/ig,
         labels: /(?<=\<label.*\>).*?(?=\<\/)/ig,
@@ -34,127 +31,147 @@ app.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
 
 io.sockets.on('connection', socket => {
 
-    socket.id = socket.id;
     console.log('nouveau client connecté:' + socket.id);
 
     socket.on('disconnect', cleanTask);
-    socket.on('deconnexion', cleanTask);
+
     socket.on('initialiseRecherche', (data, callback) => {
-        requests.url = data.url;
-        requests.interval = data.interval;
-        requests.mode = 'default';
-        requests.start = new Date();
+
+        if (!servers.queue[socket.id]) {
+            servers.queue[socket.id] = {};
+        }
+
+        servers.queue[socket.id].index = 0;
+        servers.queue[socket.id].url = data.url;
+        servers.queue[socket.id].interval = data.interval;
+        servers.queue[socket.id].userAgent = data.userAgent;
+        servers.queue[socket.id].mode = 'default';
+        servers.queue[socket.id].intervalId = setInterval(recherche, servers.queue[socket.id].interval * 1000);
+
         recherche();
-        requests.intervalId = setInterval(recherche, requests.interval * 1000);
+
         callback({success: true, startRecherche: true});
+
     });
 
     function recherche()
     {
-        switch(requests.mode) {
-            case 'guichet':
-                if (requests.guichet.length) {
 
-                    if (requests.index > requests.guichet.length - 1) {
-                        requests.index = 0;
-                    } else if (requests.index < 0) {
-                        requests.index = requests.guichet.length;
-                    }
+        for(let socketId in servers.queue) {
+          
+            let currentQueue = servers.queue[socketId];
 
-                    requests.postData = {
-                         planning: requests.guichet[requests.index].id,
-                         nextButton: 'Etape suivante'
-                     };
+            currentQueue.start = new Date();
 
-                    requests.index++;
-               }
-            break;
-            default:
-             requests.postData = {
-                condition : 'on',
-                nextButton : 'Effectuer une demande de rendez-vous'
-             };
-            break;
-        }
+            switch(currentQueue.mode) {
+                case 'guichet':
+                    if (currentQueue.guichet.length) {
 
-        console.log('postData Debug:');
-        console.log(requests.postData);
-
-        request({
-            url: requests.url,
-            method: 'post',
-            form: requests.postData,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36',
-                'Referer': requests.url
-            },
-            jar: jar
-        }, function(err, response, body) {
-
-            requests.end = new Date();
-            requests.time = moment().format('YYYY-MM-DD HH:mm:ss') + ' ';
-
-            if (err) {
-               requests.message = err.code + ' - ' + err.message + 'ಠ·ಠ';
-               io.to(socket.id).emit('showResult', {success: false, error_code: err.code ,message: requests.message, time: requests.time});
-            } else if (response.statusCode != 200) {
-                requests.message = response.statusCode + ' - ' + 'siteweb indisponible à ce moment.. ಠ·ಠ';
-               io.to(socket.id).emit('showResult', {success: false, error_code: response.statusCode, message: requests.message, time: requests.time});
-            } else {
-
-                requests.body = body.toLowerCase();
-
-                switch(requests.mode) {
-                    case 'guichet':
-                        let guichetI = requests.index - 1;
-                        if (requests.body.match(requests.reg.maintenance)) {
-                            requests.message = 'site indisponible à ce moment.. (¬_¬)';
-                            io.to(socket.id).emit('showResult', {success: false, message: requests.message, guichet: requests.guichet[guichetI].label, time: requests.time});
-                        } else if (requests.body.match(requests.reg.nordv)) {
-                            requests.message = 'aucun rdv indisponible à ce moment.. (¬_¬)';
-                            io.to(socket.id).emit('showResult', {success: false, message: requests.message, guichet: requests.guichet[guichetI].label, time: requests.time});
-                        } else {
-                            requests.message = 'Youpi !!! rdv disponible, vite vite (・ω<)';
-                            io.to(socket.id).emit('showResult', {success: true, message: requests.message, url: requests.url, guichet: requests.guichet[guichetI].label, time:requests.time});
+                        if (currentQueue.index > currentQueue.guichet.length - 1) {
+                            currentQueue.index = 0;
+                        } else if (currentQueue.index < 0) {
+                            currentQueue.index = currentQueue.guichet.length;
                         }
-                    break;
 
-                    default:
+                        currentQueue.postData = {
+                             planning: currentQueue.guichet[currentQueue.index].id,
+                             nextButton: 'Etape suivante'
+                         };
 
-                        let radios = requests.body.match(requests.reg.radios);
-                        if (radios) {
-                            requests.guichet = [];
-                            for(let i in radios) {
-                                let ids = radios[i].match(requests.reg.ids);
-                                let labels = radios[i].match(requests.reg.labels);
-                                if (ids && labels) {
-                                    requests.guichet.push({
-                                        id: ids.pop(),
-                                        label: labels.pop()
-                                    });
-                                }
-                            }
-
-                            if (requests.guichet) {
-                                requests.mode = 'guichet';
-                                requests.url = response.request.uri.href;
-                                recherche();
-                            }
-                        }
-                    break;
-                }
+                        currentQueue.index++;
+                   }
+                break;
+                default:
+                 currentQueue.postData = {
+                    condition : 'on',
+                    nextButton : 'Effectuer une demande de rendez-vous'
+                 };
+                break;
             }
 
-            console.log(requests.time + requests.message);
-        });
+            console.log('postData Debug:' + socketId + ' ' + currentQueue.start);
+            console.log(currentQueue.postData);
+
+            request({
+                url: currentQueue.url,
+                method: 'post',
+                form: currentQueue.postData,
+                headers: {
+                    'User-Agent': currentQueue.userAgent,
+                    'Referer': currentQueue.url
+                },
+                jar: jar
+            }, function(err, response, body) {
+
+                currentQueue.end = new Date();
+                currentQueue.time = moment().format('YYYY-MM-DD HH:mm:ss') + ' ';
+
+                if (err) {
+                   currentQueue.message = err.code + ' - ' + err.message + ' ಠ·ಠ';
+                   io.to(socketId).emit('showResult', {success: false, error_code: err.code ,message: currentQueue.message, time: currentQueue.time});
+                } else if (response.statusCode != 200) {
+                    currentQueue.message = response.statusCode + ' - ' + 'siteweb indisponible à ce moment.. ಠ·ಠ';
+                   io.to(socketId).emit('showResult', {success: false, error_code: response.statusCode, message: currentQueue.message, time: currentQueue.time});
+                } else {
+
+                    currentQueue.body = body.toLowerCase();
+
+                    switch(currentQueue.mode) {
+                        case 'guichet':
+                            let guichetI = currentQueue.index - 1;
+                            if (currentQueue.body.match(servers.reg.maintenance)) {
+                                currentQueue.message = 'site indisponible à ce moment.. (¬_¬)';
+                                io.to(socketId).emit('showResult', {success: false, message: currentQueue.message, guichet: currentQueue.guichet[guichetI].label, time: currentQueue.time});
+                            } else if (currentQueue.body.match(servers.reg.nordv)) {
+                                currentQueue.message = 'aucun rdv indisponible à ce moment.. (¬_¬)';
+                                io.to(socketId).emit('showResult', {success: false, message: currentQueue.message, guichet: currentQueue.guichet[guichetI].label, time: currentQueue.time});
+                            } else {
+                                console.log(currentQueue.body);
+                                currentQueue.message = 'Youpi !!! rdv disponible, vite vite (・ω<)';
+                                io.to(socketId).emit('showResult', {success: true, message: currentQueue.message, url: currentQueue.url, guichet: currentQueue.guichet[guichetI].label, time:currentQueue.time});
+                            }
+                        break;
+
+                        default:
+
+                            let radios = currentQueue.body.match(servers.reg.radios);
+                            if (radios) {
+                                currentQueue.guichet = [];
+                                for(let i in radios) {
+                                    let ids = radios[i].match(servers.reg.ids);
+                                    let labels = radios[i].match(servers.reg.labels);
+                                    if (ids && labels) {
+                                        currentQueue.guichet.push({
+                                            id: ids.pop(),
+                                            label: labels.pop()
+                                        });
+                                    }
+                                }
+
+                                if (currentQueue.guichet) {
+                                    currentQueue.mode = 'guichet';
+                                    currentQueue.url = response.request.uri.href;
+                                    recherche();
+                                }
+                            }
+                        break;
+                    }
+                }
+            });
+        }
     }
 
-    // nettoye intervaller
     function cleanTask()
     {
-        clearInterval(requests.intervalId);
-        console.log("client déconnectée:" + socket.id);
+        if (!servers.queue[socket.id]) {
+            return;
+        }
 
+        clearInterval(servers.queue[socket.id].intervalId);
+
+        delete servers.queue[socket.id];
+
+        console.log("client déconnectée:" + socket.id);
     }
 });
 

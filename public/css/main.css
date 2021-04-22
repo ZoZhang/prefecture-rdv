@@ -24,7 +24,7 @@
 
 #console {
     visibility: hidden;
-    padding: 10px;
+    padding: 5px;
     overflow-y: scroll;
     max-height: 19rem;
     list-style: none;
@@ -43,7 +43,8 @@
     margin-bottom: 9px;
     border-bottom: 1px #fff dashed;
     word-break: break-all;
-    padding: 0 0 4px 4px;
+    padding: 0 0 4px 0;
+    position: relative;
 }
 
 #console > li.text-success {
@@ -52,4 +53,23 @@
 
 #console > li > a {
     color:#30d4cd;
+}
+
+#console > li > time {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+
+@media screen and (min-width: 200px) and (max-width: 640px) {
+
+    #console > li > time {
+        position: initial;
+        display: block;
+    }
+
+    .text-nowrap {
+       white-space: normal!important;
+    }
 }
