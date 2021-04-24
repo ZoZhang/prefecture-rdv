@@ -46,16 +46,14 @@
 
             // initialise connexion websocket
             initializWebSocket: function() {
-                rdv.params.socket = io(rdv.params.host, {transports: ['websocket'], secure: false});
-
+                rdv.params.socket = io(rdv.params.host, {transports: ['websocket', 'polling', 'flashsocket']});
                 rdv.params.socket.on('connect', () => {
-
-                    const params = rdv.getLocalStorage(rdv.params.storageKey);
-
-                    // reconnect
-                    if (params) {
-                        rdv.params.SubmitBtn.trigger('click');
-                    }
+                    // const params = rdv.getLocalStorage(rdv.params.storageKey);
+                    //
+                    // // reconnect
+                    // if (params) {
+                    //     rdv.params.SubmitBtn.trigger('click');
+                    // }
                 });
 
                 // mise a jour les notifications.
