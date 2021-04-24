@@ -5,7 +5,7 @@ Néanmoins, je ne garanti pas son exactitude :)
 ### Demo
 http://rdv.zhangzhao.fr/
 
-###Utilisation
+### Utilisation
 Il est conseiller d'utiliser Chrome pour lancer cette application.
 
 Pour lancer, il faut installer `nodejs` via ce [lien](https://nodejs.org/fr/download/).
