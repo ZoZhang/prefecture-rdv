@@ -36,6 +36,11 @@
 
                 // submit button
                 rdv.params.SubmitBtn = $('button');
+
+                const storage = rdv.getLocalStorage(rdv.params.storageKey);
+                if (storage && storage.url) {
+                    $('input[type="text"]', rdv.params.MainForm).val(storage.url);
+                }
             },
 
             // initialise les events
@@ -100,7 +105,6 @@
 
                 const input = $("input", $(this));
                 const button = $("button", $(this));
-                const storage = rdv.getLocalStorage(rdv.params.storageKey);
                 const data = $(this).serializeArray();
 
                 for(let i in data) {
@@ -108,15 +112,7 @@
                 }
 
                 let params = {url: rdv.params.url, interval: rdv.params.intervalle, userAgent: navigator.userAgent};
-
-                if (storage && storage.url) {
-                    params = storage;
-                } else if(params.url) {
-                    rdv.toLocalStorage(rdv.params.storageKey, params);
-                } else {
-                    return false;
-                }
-
+                rdv.toLocalStorage(rdv.params.storageKey, params);
                 rdv.params.socket.emit('initialiseRecherche', params , function(res) {
                     rdv.disabledForm();
                     console.log('callback server:', res);
