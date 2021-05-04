@@ -91,7 +91,7 @@
                     $(li).append(message);
                     $(li).append(time)
 
-                    if (res.url) {
+                    if (res.success && res.url) {
                         $(li).append('<br/><a href="'+res.url+'" target="_blank">'+res.url+'</a>');
                     }
 

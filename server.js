@@ -21,10 +21,12 @@ const servers = {
         ids: /(\d+).*?(?=\")/ig,
         labels: /(?<=\<label.*\>).*?(?=\<\/)/ig,
         radios: /(?<=\<input.*type=\"radio\".*value=\").*?(?=\").*(?<=\<label.*\>).*?(?=\<\/)/ig,
-        nordv: /existe plus de plage horaire libre|ultérieurement/ig,
-        maintenance: /site indisponible|maintenance/ig
+        nordv: /existe plus de plage horaire libre/ig,
+        maintenance: /site indisponible|maintenance/ig,
+        convovation:/ancien titre|récépissé|vous présenter|votre convocation|ancien titre et récépissé|passeport biométrique|timbres fiscaux/ig,
     }
 };
+
 
 app.use(express.static('public'));
 app.get("/", (req, res) => res.sendFile(__dirname + "/index.html"));
@@ -61,6 +63,7 @@ io.sockets.on('connection', socket => {
           
             let currentQueue = servers.queue[socketId];
 
+            currentQueue.message = ''
             currentQueue.start = new Date();
 
             switch(currentQueue.mode) {
@@ -80,6 +83,10 @@ io.sockets.on('connection', socket => {
 
                         currentQueue.index++;
                    }
+                break;
+                case 'covocation':
+
+
                 break;
                 default:
                  currentQueue.postData = {
@@ -102,7 +109,6 @@ io.sockets.on('connection', socket => {
                 },
                 jar: jar
             }, function(err, response, body) {
-
                 currentQueue.end = new Date();
                 currentQueue.time = moment().format('YYYY-MM-DD HH:mm:ss') + ' ';
 
@@ -118,18 +124,21 @@ io.sockets.on('connection', socket => {
 
                     switch(currentQueue.mode) {
                         case 'guichet':
+
+                            let success = false
                             let guichetI = currentQueue.index - 1;
-                            if (currentQueue.body.match(servers.reg.maintenance)) {
-                                currentQueue.message = 'site indisponible à ce moment.. (¬_¬)';
-                                io.to(socketId).emit('showResult', {success: false, message: currentQueue.message, guichet: currentQueue.guichet[guichetI].label, time: currentQueue.time});
+
+                            if (currentQueue.body.match(servers.reg.convovation)){
+                                success = true
+                                currentQueue.message = 'Youpi !!! rdv disponible, vite vite (・ω<)';
                             } else if (currentQueue.body.match(servers.reg.nordv)) {
                                 currentQueue.message = 'aucun rdv indisponible à ce moment.. (¬_¬)';
-                                io.to(socketId).emit('showResult', {success: false, message: currentQueue.message, guichet: currentQueue.guichet[guichetI].label, time: currentQueue.time});
-                            } else {
-                                console.log(currentQueue.body);
-                                currentQueue.message = 'Youpi !!! rdv disponible, vite vite (・ω<)';
-                                io.to(socketId).emit('showResult', {success: true, message: currentQueue.message, url: currentQueue.url, guichet: currentQueue.guichet[guichetI].label, time:currentQueue.time});
+                            } else if (currentQueue.body.match(servers.reg.maintenance)) {
+                                currentQueue.message = 'site indisponible à ce moment.. (¬_¬)';
                             }
+
+                            io.to(socketId).emit('showResult', {success: success, message: currentQueue.message, url: currentQueue.url, guichet: currentQueue.guichet[guichetI].label, time: currentQueue.time});
+
                         break;
 
                         default:
@@ -157,6 +166,7 @@ io.sockets.on('connection', socket => {
                         break;
                     }
                 }
+                 console.log('Response Debug:' + ' ' + currentQueue.message);
             });
         }
     }
@@ -175,5 +185,5 @@ io.sockets.on('connection', socket => {
     }
 });
 
-http.listen(port, () => console.log("https://localhost:"+port));
+http.listen(port, () => console.log("http://localhost:"+port));
 
