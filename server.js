@@ -23,7 +23,7 @@ const servers = {
         radios: /(?<=\<input.*type=\"radio\".*value=\").*?(?=\").*(?<=\<label.*\>).*?(?=\<\/)/ig,
         nordv: /existe plus de plage horaire libre/ig,
         maintenance: /site indisponible|maintenance/ig,
-        convovation:/ancien titre|récépissé|vous présenter|votre convocation|ancien titre et récépissé|passeport biométrique|timbres fiscaux/ig,
+        convovation:/ancien titre|récépissé|vous présenter|votre convocation|ancien titre et récépissé|passeport biométrique|timbres fiscaux|une plage horaire|Rechargement automatique du calendrier/ig,
     }
 };
 
